@@ -1,0 +1,128 @@
+1. Can you explian the architecture of the project
+Ans. i applied the onionArchitecture in my project
+
+2. what is onionarchitecture?
+can you explian the folder structure of the project in dotnet CLI
+
+ 1.   IN BASEENTITY
+
+using System;
+
+namespace Domain.Models
+{
+    public abstract class BaseEntity
+    {
+        public Int64 Id { get; set; }
+        public DateTime AddedDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
+        public string IPAddress { get; set; }
+    }
+}
+
+2.		IN USER.CS
+
+namespace Domain.Models
+{
+    public class User :BaseEntity
+    {
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+}
+
+3.		USERMAP.CS
+
+	using Microsoft.EntityFrameworkCore.Metadata.Builders;
+namespace Domain.Models
+{
+    public class UserMap
+    {
+        public UserMap(EntityTypeBuilder<User> entityBuilder)
+        {
+            entityBuilder.HasKey(t => t.Id);
+            entityBuilder.Property(t => t.Email).IsRequired();
+            entityBuilder.Property(t => t.Password).IsRequired();
+            entityBuilder.Property(t => t.UserName).IsRequired();
+        }
+    }
+}
+
+4.  		USERPROFILE.CS
+
+	namespace Domain.Models
+{
+    public class UserProfile :BaseEntity
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Address { get; set; }
+    }
+}
+
+5.		USERPROFILEMAP.CS
+
+	namespace Domain.Models
+{
+    public class UserProfileMap
+    {
+        public UserProfileMap(EntityTypeBuilder<UserProfile> entityBuilder)
+        {
+            entityBuilder.HasKey(t => t.Id);
+            entityBuilder.Property(t => t.FirstName).IsRequired();
+            entityBuilder.Property(t => t.LastName).IsRequired();
+            entityBuilder.Property(t => t.Address);
+        }
+    }	
+
+6.		USERMANAGEMENTCONTEXT.CS
+
+	using Microsoft.EntityFrameworkCore;
+        using Domain.Models;
+namespace Domain.EntityFrameWorkCore
+{
+    public class UserManagementcontext : DbContext
+    {
+       public UserManagementcontext(DbContextOptions options) : base(options)
+         {
+    
+         }
+         protected override void OnModelCreating(ModelBuilder modelBuilder)
+         {
+             new UserMap(modelBuilder.Entity<User>());
+             new UserProfileMap(modelBuilder.Entity<UserProfile>());
+         }
+    }
+}
+
+7.		IGENERICREPOSITORY
+
+	using System.Collections.Generic;
+        using Domain.Models;
+
+namespace Infrastructure.GenericRepository
+{
+    public interface IGenericRepository<T> where T : BaseEntity
+    {
+        IEnumerable<T> GetAll();
+        T Get(long id);
+        void Insert(T entity);
+        void Update(T entity);
+        void Delete(T entity);
+        void Remove(T entity);
+        void SaveChanges();
+    }
+}
+
+8.		GenericRepository
+
+	using Domain.Models;
+
+namespace Infrastructure.GenericRepository
+{
+    public interface GenericRepository<T> where T : BaseEntity
+    {
+        
+    }
+}
+9.
